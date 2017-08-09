@@ -9,6 +9,8 @@ public class Spawner : MonoBehaviour {
   public Transform spawnPoint;
 
   [Header("Spawner Options")]
+  public float platformSpacing = 6;
+  public float platformSpacingMargin = 3;
   public float obstacleMaxLevelDiff = 1;
 
   [Header("Misc.")]
@@ -39,65 +41,68 @@ public class Spawner : MonoBehaviour {
     }
 
     ChangeLevel(currentLevelIndex);
+
+    // Spawn initial platforms until the spawnPoint
+    float yPos = currentLevel.platformSpacing;
+    while (yPos < spawnPoint.position.y) {
+      int spawnId = RandomPlatformID();
+      InstantiatePlatform(spawnId, yPos);
+      yPos += currentLevel.platformSpacing + Random.Range(0, currentLevel.platformSpacingMargin);
+    }
+
   }
 
   // Update is called once per frame
   void Update() {
-
-
-    //Debug.Log (Screen.);
-
-    //Camera.main.transform.position = new Vector3 (Camera.main.transform.position.x, Camera.main.transform.position.y + Time.deltaTime, Camera.main.transform.position.z);
-
-
     if (GameController.instance.isRunning) {
-
-      // Spawn Platform
-      if (spawnPoint.position.y - lastPlatformHeight > currentLevel.platformDistance) {
-        int spawnId = -1;
-        bool done = false;
-
-        do {
-          float r = Random.value;
-
-          float lastSum = 0;
-          for (int i = 0; i < platformPrefabs.Length; i++) {
-            float sum = 0;
-
-            for (int j = 0; j <= i; j++)
-              sum += currentLevel.platformPercentages[j];
-
-            if (r >= lastSum && r < sum) {
-              spawnId = platformPrefabs[i].GetComponent<Platform>().objectID;
-              break;
-            }
-            else
-              lastSum = sum;
-          }
-
-          done = true;
-
-        } while (done == false);
-
-        SpawnPlatform(spawnId);
+      // Spawn a new platform
+      if (spawnPoint.position.y - lastPlatformHeight > currentLevel.platformSpacing) {
+        int spawnId = RandomPlatformID();
+        InstantiatePlatform(spawnId);
       }
     }
   }
 
-  void SpawnPlatform(int id) {
+  int RandomPlatformID() {
+    int spawnId = -1;
+    float r = Random.value;
+
+    float lastSum = 0;
+    for (int i = 0; i < platformPrefabs.Length; i++) {
+      float sum = 0;
+
+      for (int j = 0; j <= i; j++)
+        sum += currentLevel.platformPercentages[j];
+
+      if (r >= lastSum && r < sum) {
+        spawnId = platformPrefabs[i].GetComponent<Platform>().objectID;
+        break;
+      }
+      else
+        lastSum = sum;
+    }
+
+    return spawnId;
+  }
+
+  void InstantiatePlatform(int id) {
+    InstantiatePlatform(id, spawnPoint.transform.position.y);
+  }
+
+  void InstantiatePlatform(int id, float yPos) {
 
     GameObject platform;
     Platform platScript;
 
     float xPos = Random.Range(xLeft, xRight);
-    Vector3 spawnPos = new Vector3(xPos, spawnPoint.transform.position.y, 0);
+    Vector3 spawnPos = new Vector3(xPos, yPos, 0);
 
     platform = (GameObject) Instantiate(platformPrefabs[id], spawnPos, platformPrefabs[id].transform.rotation);
     platScript = platform.GetComponent<Platform>();
     platScript.Initialize(/*maxObstacleLength*/);
     platScript.instanceID = id;
 
-  
+
     //if (!platScript.fullWidth) {
     //  int side = Random.Range(0, 3);
     //  if (side == 0)
@@ -109,7 +114,7 @@ public class Spawner : MonoBehaviour {
     //}
 
 
-    lastPlatformHeight = spawnPoint.position.y + Random.Range(-currentLevel.platformDistanceRange/2, currentLevel.platformDistanceRange/2);
+    lastPlatformHeight = yPos + Random.Range(0, currentLevel.platformSpacingMargin);
   }
 
 
@@ -130,8 +135,8 @@ public class Spawner : MonoBehaviour {
     int activeNum = activePlatforms.Count;
 
     GameLevel level = new GameLevel();
-    level.platformDistance = 1;
-    level.platformDistanceRange = 1;
+    level.platformSpacing = platformSpacing;
+    level.platformSpacingMargin = platformSpacingMargin;
 
 
     level.platformPercentages = new float[platformPrefabs.Length];
