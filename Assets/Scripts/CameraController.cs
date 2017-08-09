@@ -16,7 +16,13 @@ public class CameraController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+	  if(GameController.instance.isRunning) {
+      Vector2 cameraPos = transform.position;
+      Vector2 playerPos = player.transform.position;
+
+      cameraPos = Vector2.Lerp(cameraPos, playerPos, 5 * Time.deltaTime);
+      transform.position = new Vector3(cameraPos.x, cameraPos.y, transform.position.z);
+    }
 	}
 
 
@@ -34,8 +40,8 @@ public class CameraController : MonoBehaviour {
             GL.Vertex(Input.mousePosition);
             GL.End();
             GL.PopMatrix();
-            Debug.Log(player.clickLocation);
-            Debug.Log(Input.mousePosition);
+            //Debug.Log(player.clickLocation);
+            //Debug.Log(Input.mousePosition);
         }
     }
 

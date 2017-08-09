@@ -4,7 +4,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(Movable))]
 
-public class MovingPlatform : BasePlatform {
+public class MovingPlatform : Platform {
 
 	// Use this for initialization
 	void Start () {
