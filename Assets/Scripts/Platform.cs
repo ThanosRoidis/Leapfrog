@@ -15,7 +15,9 @@ public abstract class Platform : MonoBehaviour {
 
   // Use this for initialization
   public void Initialize () {
-		
+    Vector3 localScale = transform.localScale;
+    localScale.x *= Random.Range(1.2f, 2.5f);
+    transform.localScale = localScale;
 	}
 	
 	// Update is called once per frame

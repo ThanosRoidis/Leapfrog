@@ -11,10 +11,10 @@ public class Spawner : MonoBehaviour {
   [Header("Spawner Options")]
   public float platformSpacing = 6;
   public float platformSpacingMargin = 3;
-  public float obstacleMaxLevelDiff = 1;
+  public float platformLevelCutoff = 10;
 
   [Header("Misc.")]
-  public int currentLevelIndex;
+  public int currentLevelIndex = 0;
   private GameLevel currentLevel;
 
   private float xLeft;
@@ -123,10 +123,10 @@ public class Spawner : MonoBehaviour {
     float totalPriority = 0;
 
     foreach (GameObject obs in platformPrefabs) {
-      Platform obScript = obs.GetComponent<Platform>();
-      if (obScript.start_lvl <= levelIndex && Mathf.Abs(obScript.main_lvl - levelIndex) < obstacleMaxLevelDiff) {
-        activePlatforms.Add(obScript);
-        totalPriority += obScript.priority;
+      Platform platScript = obs.GetComponent<Platform>();
+      if (platScript.start_lvl <= levelIndex && Mathf.Abs(platScript.main_lvl - levelIndex) < platformLevelCutoff) {
+        activePlatforms.Add(platScript);
+        totalPriority += platScript.priority;
 
         //				Debug.Log (obScript.objectID);
       }
@@ -153,7 +153,7 @@ public class Spawner : MonoBehaviour {
 
     foreach (Platform obScript in activePlatforms) {
       float norm_priority = obScript.priority / totalPriority;
-      float level_penalty = norm_priority * Mathf.Abs(obScript.main_lvl - levelIndex) / obstacleMaxLevelDiff;
+      float level_penalty = norm_priority * Mathf.Abs(obScript.main_lvl - levelIndex) / platformLevelCutoff;
 
       level.platformPercentages[obScript.objectID] += norm_priority;
       level.platformPercentages[obScript.objectID] -= level_penalty;
